@@ -1,28 +1,49 @@
 const pool = require("../config/db");
 
-const createUser = async (req, res) => {
-    try {
-        const { name, email, profile_pic } = req.body;
+const getProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-        const result = await pool.query(
-            `
-            INSERT INTO users(name, email, profile_pic)
-            VALUES($1, $2, $3)
-            RETURNING *
-            `,
-            [name, email, profile_pic]
-        );
+    const activeResult = await pool.query(
+      `
+      SELECT COUNT(*)
+      FROM products
+      WHERE seller_id = $1
+      AND status = 'available'
+      `,
+      [userId]
+    );
 
-        res.status(201).json(result.rows[0]);
-    } catch (error) {
-        console.error(error);
+    const soldResult = await pool.query(
+      `
+      SELECT COUNT(*)
+      FROM products
+      WHERE seller_id = $1
+      AND status = 'sold'
+      `,
+      [userId]
+    );
 
-        res.status(500).json({
-            message: "Error creating user"
-        });
-    }
+    res.json({
+      success: true,
+      user: req.user,
+      activeListings: Number(
+        activeResult.rows[0].count
+      ),
+      soldProducts: Number(
+        soldResult.rows[0].count
+      ),
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch profile",
+    });
+  }
 };
 
 module.exports = {
-    createUser
+  getProfile,
 };

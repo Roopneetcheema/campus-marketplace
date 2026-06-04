@@ -27,6 +27,17 @@ function ProductDetails() {
 
   return (
     <div>
+      {product.images?.length > 0 && (
+  <img
+    src={product.images[0].image_url}
+    alt={product.title}
+    style={{
+      width: "400px",
+      maxWidth: "100%",
+      borderRadius: "10px",
+    }}
+  />
+)}
       <h1>{product.title}</h1>
 
       <hr />
