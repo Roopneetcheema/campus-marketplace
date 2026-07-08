@@ -12,14 +12,14 @@ function ProductCard({ product }) {
           rounded-2xl
           overflow-hidden
           border
-          border-slate-200
-          hover:shadow-lg
+          border-slate-100
+          hover:shadow-md
           transition-all
           duration-200
         "
       >
         {/* Image */}
-        <div className="aspect-square bg-slate-100">
+        <div className="relative aspect-[4/5] bg-slate-100">
           {product.image_url ? (
             <img
               src={product.image_url}
@@ -31,22 +31,47 @@ function ProductCard({ product }) {
               "
             />
           ) : (
-            <div className="h-full flex items-center justify-center text-slate-400">
+            <div
+              className="
+                h-full
+                flex
+                items-center
+                justify-center
+                text-slate-400
+                text-sm
+              "
+            >
               No Image
             </div>
           )}
+
+          <span
+            className="
+              absolute
+              top-2
+              left-2
+              bg-white/90
+              backdrop-blur
+              text-[10px]
+              px-2
+              py-1
+              rounded-full
+              font-medium
+              text-slate-700
+            "
+          >
+            {product.category}
+          </span>
         </div>
 
         {/* Content */}
         <div className="p-3">
           <h3
             className="
-              font-semibold
-              text-slate-900
               text-sm
-              md:text-base
-              line-clamp-2
-              min-h-[40px]
+              font-medium
+              text-slate-900
+              truncate
             "
           >
             {product.title}
@@ -54,53 +79,33 @@ function ProductCard({ product }) {
 
           <p
             className="
-              text-lg
-              md:text-xl
-              font-bold
-              text-emerald-600
               mt-2
+              text-lg
+              font-bold
+              text-slate-900
             "
           >
             ₹{product.price}
           </p>
 
-          <div className="flex gap-2 mt-2 flex-wrap">
+          <div className="mt-2 flex items-center justify-between">
             <span
               className="
-                text-xs
-                bg-slate-100
-                px-2
-                py-1
-                rounded-full
+                text-[11px]
+                text-slate-500
               "
             >
-              {product.category}
+              Hostel {product.hostel}
             </span>
 
             <span
               className="
-                text-xs
-                bg-slate-100
-                px-2
-                py-1
-                rounded-full
+                text-[11px]
+                text-slate-400
               "
             >
               {product.condition_type}
             </span>
-          </div>
-
-          <div
-            className="
-              mt-3
-              text-xs
-              text-slate-500
-              flex
-              items-center
-              gap-1
-            "
-          >
-            Hostel {product.hostel}
           </div>
         </div>
       </div>

@@ -17,11 +17,24 @@ function Home() {
   const [selectedHostel, setSelectedHostel] =
     useState("All");
 
+  const [showHostelModal, setShowHostelModal] =
+    useState(false);
+
+  const [sortBy, setSortBy] =
+    useState("newest");
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
   const fetchProducts = async () => {
     try {
-      const response = await api.get("/products");
+      const response =
+        await api.get("/products");
 
-      setProducts(response.data.products);
+      setProducts(
+        response.data.products
+      );
     } catch (error) {
       console.error(error);
     } finally {
@@ -29,177 +42,242 @@ function Home() {
     }
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const filteredProducts = products.filter(
-    (product) => {
+  const filteredProducts = products
+    .filter((product) => {
       const matchesSearch =
         product.title
           .toLowerCase()
-          .includes(search.toLowerCase());
+          .includes(
+            search.toLowerCase()
+          );
 
       const matchesCategory =
         selectedCategory === "All" ||
-        product.category === selectedCategory;
+        product.category ===
+          selectedCategory;
 
       const matchesHostel =
         selectedHostel === "All" ||
-        product.hostel === selectedHostel;
+        product.hostel ===
+          selectedHostel;
 
       return (
         matchesSearch &&
         matchesCategory &&
         matchesHostel
       );
-    }
-  );
+    })
+    .sort((a, b) => {
+      if (sortBy === "lowToHigh") {
+        return (
+          Number(a.price) -
+          Number(b.price)
+        );
+      }
+
+      if (sortBy === "highToLow") {
+        return (
+          Number(b.price) -
+          Number(a.price)
+        );
+      }
+
+      return (
+        new Date(b.created_at) -
+        new Date(a.created_at)
+      );
+    });
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-slate-50">
-        <h1 className="text-xl font-semibold text-slate-700">
-          Loading products...
+      <div
+        className="
+          min-h-screen
+          flex
+          items-center
+          justify-center
+          bg-[#f6f5f3]
+        "
+      >
+        <h1 className="text-slate-600">
+          Loading...
         </h1>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
-            Find What You Need
-          </h1>
-
-          <p className="text-slate-500 mt-2">
-            Buy and sell within the campus community.
-          </p>
-        </div>
-
+    <div
+      className="
+        min-h-screen
+        bg-[#f6f5f3]
+        pb-24
+      "
+    >
+      <div
+        className="
+          max-w-7xl
+          mx-auto
+          px-4
+          py-5
+        "
+      >
         {/* Search */}
-        <div className="mb-6">
+        <div className="mb-4">
           <input
             type="text"
             value={search}
             onChange={(e) =>
-              setSearch(e.target.value)
+              setSearch(
+                e.target.value
+              )
             }
             placeholder="Search books, cycles, electronics..."
             className="
               w-full
+              h-12
               bg-white
               border
-              border-slate-300
+              border-slate-200
               rounded-2xl
-              p-4
+              px-4
+              text-sm
               focus:outline-none
-              focus:ring-2
-              focus:ring-slate-400
             "
           />
         </div>
 
         {/* Categories */}
-        <div className="mb-6">
-          <div
-            className="
-              flex
-              gap-2
-              overflow-x-auto
-              pb-2
-            "
+        <div
+          className="
+            flex
+            gap-2
+            overflow-x-auto
+            pb-2
+            mb-4
+          "
+        >
+          <button
+            onClick={() =>
+              setSelectedCategory(
+                "All"
+              )
+            }
+            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs ${
+              selectedCategory ===
+              "All"
+                ? "bg-slate-800 text-white"
+                : "bg-white border border-slate-200"
+            }`}
           >
-            <button
-              onClick={() =>
-                setSelectedCategory("All")
-              }
-              className={`
-                whitespace-nowrap
-                px-4
-                py-2
-                rounded-full
-                text-sm
-                ${
-                  selectedCategory === "All"
-                    ? "bg-black text-white"
-                    : "bg-white border border-slate-300"
-                }
-              `}
-            >
-              All
-            </button>
+            All
+          </button>
 
-            {categories.map((category) => (
+          {categories.map(
+            (category) => (
               <button
                 key={category}
                 onClick={() =>
-                  setSelectedCategory(category)
+                  setSelectedCategory(
+                    category
+                  )
                 }
-                className={`
-                  whitespace-nowrap
-                  px-4
-                  py-2
-                  rounded-full
-                  text-sm
-                  ${
-                    selectedCategory === category
-                      ? "bg-black text-white"
-                      : "bg-white border border-slate-300"
-                  }
-                `}
+                className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs ${
+                  selectedCategory ===
+                  category
+                    ? "bg-slate-800 text-white"
+                    : "bg-white border border-slate-200"
+                }`}
               >
                 {category}
               </button>
-            ))}
+            )
+          )}
+        </div>
+
+        {/* Filters */}
+        <div
+          className="
+            flex
+            items-center
+            justify-between
+            mb-5
+            gap-2
+          "
+        >
+          <p className="text-sm text-slate-500">
+            {
+              filteredProducts.length
+            }{" "}
+            items
+          </p>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() =>
+                setShowHostelModal(
+                  true
+                )
+              }
+              className="
+                bg-white
+                border
+                border-slate-200
+                rounded-xl
+                px-3
+                py-2
+                text-sm
+              "
+            >
+              {selectedHostel ===
+              "All"
+                ? "Hostel"
+                : selectedHostel}
+            </button>
+
+            <select
+              value={sortBy}
+              onChange={(e) =>
+                setSortBy(
+                  e.target.value
+                )
+              }
+              className="
+                bg-white
+                border
+                border-slate-200
+                rounded-xl
+                px-3
+                py-2
+                text-sm
+              "
+            >
+              <option value="newest">
+                Newest
+              </option>
+
+              <option value="lowToHigh">
+                Price ↑
+              </option>
+
+              <option value="highToLow">
+                Price ↓
+              </option>
+            </select>
           </div>
         </div>
 
-        {/* Hostel Filter */}
-        <div className="mb-8">
-          <select
-            value={selectedHostel}
-            onChange={(e) =>
-              setSelectedHostel(e.target.value)
-            }
-            className="
-              w-full
-              md:w-72
-              bg-white
-              border
-              border-slate-300
-              rounded-2xl
-              p-3
-              focus:outline-none
-              focus:ring-2
-              focus:ring-slate-400
-            "
-          >
-            <option value="All">
-              All Hostels
-            </option>
-
-            {hostels.map((hostel) => (
-              <option
-                key={hostel}
-                value={hostel}
-              >
-                {hostel}
-              </option>
-            ))}
-          </select>
-        </div>
-
         {/* Products */}
-        {filteredProducts.length === 0 ? (
-          <div className="text-center mt-20">
-            <h2 className="text-lg text-slate-500">
-              No matching products found
+        {filteredProducts.length ===
+        0 ? (
+          <div className="py-20 text-center">
+            <h2 className="font-semibold">
+              Nothing found
             </h2>
+
+            <p className="text-slate-500 mt-2">
+              Try another search.
+            </p>
           </div>
         ) : (
           <div
@@ -208,19 +286,100 @@ function Home() {
               grid-cols-2
               md:grid-cols-3
               lg:grid-cols-4
-              xl:grid-cols-5
               gap-4
             "
           >
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-              />
-            ))}
+            {filteredProducts.map(
+              (product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                />
+              )
+            )}
           </div>
         )}
       </div>
+
+      {/* Hostel Modal */}
+      {showHostelModal && (
+        <div
+          className="
+            fixed
+            inset-0
+            bg-black/40
+            z-50
+            flex
+            items-end
+          "
+          onClick={() =>
+            setShowHostelModal(false)
+          }
+        >
+          <div
+            className="
+              bg-white
+              w-full
+              rounded-t-3xl
+              p-5
+              max-h-[70vh]
+              overflow-y-auto
+            "
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
+            <div className="w-12 h-1 bg-slate-300 rounded-full mx-auto mb-5" />
+
+            <h2 className="font-semibold text-lg mb-4">
+              Select Hostel
+            </h2>
+
+            <button
+              onClick={() => {
+                setSelectedHostel(
+                  "All"
+                );
+                setShowHostelModal(
+                  false
+                );
+              }}
+              className="
+                w-full
+                text-left
+                py-3
+                border-b
+              "
+            >
+              All Hostels
+            </button>
+
+            {hostels.map(
+              (hostel) => (
+                <button
+                  key={hostel}
+                  onClick={() => {
+                    setSelectedHostel(
+                      hostel
+                    );
+                    setShowHostelModal(
+                      false
+                    );
+                  }}
+                  className="
+                    w-full
+                    text-left
+                    py-3
+                    border-b
+                  "
+                >
+                  Hostel {hostel}
+                </button>
+              )
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

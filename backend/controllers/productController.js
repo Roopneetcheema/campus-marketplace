@@ -1,4 +1,5 @@
 const pool = require("../config/db");
+const cloudinary = require("../config/cloudinary");
 
 const createProduct = async (req, res) => {
   try {
@@ -11,6 +12,7 @@ const createProduct = async (req, res) => {
   contact_method,
   hostel,
   image_url,
+  public_id,
 } = req.body;
 
     if (
@@ -64,13 +66,18 @@ seller_id
       await pool.query(
         `
         INSERT INTO product_images
-        (
-          product_id,
-          image_url
-        )
-        VALUES ($1,$2)
+(
+  product_id,
+  image_url,
+  public_id
+)
+VALUES ($1,$2,$3)
         `,
-        [product.id, image_url]
+        [
+  product.id,
+  image_url,
+  public_id,
+]
       );
     }
 
@@ -210,6 +217,7 @@ const getMyProducts = async (req, res) => {
   }
 };
 
+
 const markProductSold = async (req, res) => {
   try {
     const { id } = req.params;
@@ -239,6 +247,45 @@ const markProductSold = async (req, res) => {
       });
     }
 
+    const imagesResult = await pool.query(
+      `
+      SELECT *
+      FROM product_images
+      WHERE product_id = $1
+      `,
+      [id]
+    );
+
+    const images = imagesResult.rows;
+
+    for (const image of images) {
+      if (image.public_id) {
+        try {
+          await cloudinary.uploader.destroy(
+            image.public_id
+          );
+
+          console.log(
+            "Deleted Cloudinary image:",
+            image.public_id
+          );
+        } catch (cloudinaryError) {
+          console.error(
+            "Cloudinary deletion failed:",
+            cloudinaryError
+          );
+        }
+      }
+    }
+
+    await pool.query(
+      `
+      DELETE FROM product_images
+      WHERE product_id = $1
+      `,
+      [id]
+    );
+
     await pool.query(
       `
       UPDATE products
@@ -250,17 +297,20 @@ const markProductSold = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Product marked as sold",
+      message:
+        "Product marked as sold",
     });
   } catch (error) {
     console.error(error);
 
     res.status(500).json({
       success: false,
-      message: "Failed to mark product sold",
+      message:
+        "Failed to mark product sold",
     });
   }
 };
+
 module.exports = {
   createProduct,
   getAllProducts,

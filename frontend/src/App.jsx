@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import CreateProduct from "./pages/CreateProduct";
 import ProductDetails from "./pages/ProductDetails";
 import Profile from "./pages/Profile";
+import SellerProfile from "./pages/SellerProfile";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedLayout from "./layouts/ProtectedLayout";
@@ -13,7 +14,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route
+          path="/"
+          element={<Login />}
+        />
 
         <Route
           element={
@@ -40,6 +44,11 @@ function App() {
           <Route
             path="/profile"
             element={<Profile />}
+          />
+
+          <Route
+            path="/seller/:id"
+            element={<SellerProfile />}
           />
         </Route>
       </Routes>

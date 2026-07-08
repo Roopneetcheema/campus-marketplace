@@ -1,16 +1,24 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import toast from "react-hot-toast";
+
 import api from "../services/api";
 
 import { categories } from "../constants/categories";
 import { conditions } from "../constants/conditions";
+import { hostels } from "../constants/hostels";
 
 function CreateProduct() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     price: "",
     category: "",
     condition_type: "",
+    hostel: "",
     contact_method: "email",
   });
 
@@ -31,6 +39,7 @@ function CreateProduct() {
       setLoading(true);
 
       let imageUrl = null;
+      let publicId = null;
 
       if (image) {
         const uploadData = new FormData();
@@ -42,22 +51,28 @@ function CreateProduct() {
           uploadData,
           {
             headers: {
-              "Content-Type": "multipart/form-data",
+              "Content-Type":
+                "multipart/form-data",
             },
           }
         );
 
-        imageUrl = uploadResponse.data.imageUrl;
+        imageUrl =
+  uploadResponse.data.imageUrl;
+
+publicId =
+  uploadResponse.data.publicId;
       }
 
-      const productResponse = await api.post("/products", {
-        ...formData,
-        image_url: imageUrl,
-      });
+     await api.post("/products", {
+  ...formData,
+  image_url: imageUrl,
+  public_id: publicId,
+});;
 
-      console.log(productResponse.data);
-
-      alert("Product Created Successfully!");
+      toast.success(
+        "Product listed successfully!"
+      );
 
       setFormData({
         title: "",
@@ -65,139 +80,304 @@ function CreateProduct() {
         price: "",
         category: "",
         condition_type: "",
+        hostel: "",
         contact_method: "email",
       });
 
       setImage(null);
+
+      setTimeout(() => {
+        navigate("/profile");
+      }, 1200);
     } catch (error) {
-  console.error(error);
+      console.error(error);
 
-  console.log("FULL ERROR:");
-  console.log(error);
-
-  console.log("RESPONSE:");
-  console.log(error.response?.data);
-
-  alert(
-    error.response?.data?.message ||
-    error.message ||
-    "Failed to create product"
-  );
-} finally {
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to create product"
+      );
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Create Product</h1>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-3xl mx-auto px-4 py-6">
+        
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="title"
-          placeholder="Title"
-          value={formData.title}
-          onChange={handleChange}
-        />
+          <form
+            onSubmit={handleSubmit}
+            className="mt-8 space-y-5"
+          >
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Product Title
+              </label>
 
-        <br />
-        <br />
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="..."
+                className="
+                  w-full
+                  p-3
+                  border
+                  border-slate-300
+                  rounded-xl
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-slate-400
+                "
+              />
+            </div>
 
-        <textarea
-          name="description"
-          placeholder="Description"
-          value={formData.description}
-          onChange={handleChange}
-        />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Description
+              </label>
 
-        <br />
-        <br />
+              <textarea
+                rows="4"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Describe your item..."
+                className="
+                  w-full
+                  p-3
+                  border
+                  border-slate-300
+                  rounded-xl
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-slate-400
+                "
+              />
+            </div>
 
-        <input
-          type="number"
-          name="price"
-          placeholder="Price"
-          value={formData.price}
-          onChange={handleChange}
-        />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Price
+                </label>
 
-        <br />
-        <br />
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="..."
+                  className="
+                    w-full
+                    p-3
+                    border
+                    border-slate-300
+                    rounded-xl
+                  "
+                />
+              </div>
 
-        <select
-          name="category"
-          value={formData.category}
-          onChange={handleChange}
-        >
-          <option value="">Select Category</option>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Hostel
+                </label>
 
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
+                <select
+                  name="hostel"
+                  value={formData.hostel}
+                  onChange={handleChange}
+                  className="
+                    w-full
+                    p-3
+                    border
+                    border-slate-300
+                    rounded-xl
+                  "
+                >
+                  <option value="">
+                    Select Hostel
+                  </option>
 
-        <br />
-        <br />
+                  {hostels.map((hostel) => (
+                    <option
+                      key={hostel}
+                      value={hostel}
+                    >
+                      {hostel}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-        <select
-          name="condition_type"
-          value={formData.condition_type}
-          onChange={handleChange}
-        >
-          <option value="">Select Condition</option>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Category
+                </label>
 
-          {conditions.map((condition) => (
-            <option key={condition} value={condition}>
-              {condition}
-            </option>
-          ))}
-        </select>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="
+                    w-full
+                    p-3
+                    border
+                    border-slate-300
+                    rounded-xl
+                  "
+                >
+                  <option value="">
+                    Select Category
+                  </option>
 
-        <br />
-        <br />
+                  {categories.map(
+                    (category) => (
+                      <option
+                        key={category}
+                        value={category}
+                      >
+                        {category}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
 
-        <select
-          name="contact_method"
-          value={formData.contact_method}
-          onChange={handleChange}
-        >
-          <option value="email">Email</option>
-          <option value="whatsapp">WhatsApp</option>
-        </select>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Condition
+                </label>
 
-        <br />
-        <br />
+                <select
+                  name="condition_type"
+                  value={
+                    formData.condition_type
+                  }
+                  onChange={handleChange}
+                  className="
+                    w-full
+                    p-3
+                    border
+                    border-slate-300
+                    rounded-xl
+                  "
+                >
+                  <option value="">
+                    Select Condition
+                  </option>
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            setImage(e.target.files[0]);
-          }}
-        />
+                  {conditions.map(
+                    (condition) => (
+                      <option
+                        key={condition}
+                        value={condition}
+                      >
+                        {condition}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+            </div>
 
-        <br />
-        <br />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Contact Method
+              </label>
 
-        {image && (
-          <img
-            src={URL.createObjectURL(image)}
-            alt="preview"
-            width="200"
-          />
-        )}
+              <select
+                name="contact_method"
+                value={
+                  formData.contact_method
+                }
+                onChange={handleChange}
+                className="
+                  w-full
+                  p-3
+                  border
+                  border-slate-300
+                  rounded-xl
+                "
+              >
+                <option value="email">
+                  Email
+                </option>
 
-        <br />
-        <br />
+                <option value="whatsapp">
+                  WhatsApp
+                </option>
+              </select>
+            </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Create Product"}
-        </button>
-      </form>
-    </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Product Image
+              </label>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  setImage(
+                    e.target.files[0]
+                  )
+                }
+                className="
+                  w-full
+                  p-3
+                  border
+                  border-slate-300
+                  rounded-xl
+                  bg-white
+                "
+              />
+            </div>
+
+            {image && (
+              <img
+                src={URL.createObjectURL(
+                  image
+                )}
+                alt="preview"
+                className="
+                  w-full
+                  max-h-72
+                  object-cover
+                  rounded-2xl
+                  border
+                "
+              />
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="
+                w-full
+                bg-black
+                text-white
+                py-4
+                rounded-2xl
+                font-medium
+                hover:bg-slate-800
+                transition
+                disabled:opacity-50
+              "
+            >
+              {loading
+                ? "Creating..."
+                : "Create Listing"}
+            </button>
+          </form>
+        </div>
+      </div>
+    
   );
 }
 
